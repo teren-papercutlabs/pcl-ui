@@ -1,0 +1,70 @@
+/* PcL Steel Blue palette — hex fallbacks for oklch */
+
+:root {
+  --background: #f5f6f8;
+  --foreground: #2b3544;
+  --card: #ffffff;
+  --card-foreground: #2b3544;
+  --muted: #e8eaed;
+  --muted-foreground: #6e7a8a;
+  --accent: #3f78a4;
+  --accent-foreground: white;
+  --accent-light: #d1d7df;
+  --accent-lighter: #eceff2;
+  --border: #d1d7df;
+  --input: #d1d7df;
+  --ring: #3f78a4;
+  --invalid: #fde8e8;
+  --shadow-sm: 0 1px 3px 0px hsl(220 20% 0% / 0.06),
+    0 1px 2px -1px hsl(220 20% 0% / 0.06);
+  --shadow-md: 0 2px 6px 0px hsl(220 20% 0% / 0.08),
+    0 2px 4px -1px hsl(220 20% 0% / 0.06);
+  --destructive: #dc2626;
+  --destructive-foreground: white;
+  --popover: #ffffff;
+  --popover-foreground: #2b3544;
+  --primary: #3f78a4;
+  --primary-foreground: white;
+  --secondary: #e8eaed;
+  --secondary-foreground: #2b3544;
+  --radius: 0.5rem;
+  --warning-bg: #fff3cd;
+  --warning-fg: #856404;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1f2a;
+    --foreground: #e8eaed;
+    --card: #252b38;
+    --card-foreground: #e8eaed;
+    --muted: #333a48;
+    --muted-foreground: #9aa3b0;
+    --accent: #5a9fd4;
+    --accent-foreground: white;
+    --accent-light: #3d4756;
+    --accent-lighter: #2e3644;
+    --border: #3d4756;
+    --input: #3d4756;
+    --ring: #5a9fd4;
+    --invalid: #4a2a2a;
+    --shadow-sm: 0 1px 3px 0px hsl(220 20% 0% / 0.2),
+      0 1px 2px -1px hsl(220 20% 0% / 0.2);
+    --shadow-md: 0 2px 6px 0px hsl(220 20% 0% / 0.25),
+      0 2px 4px -1px hsl(220 20% 0% / 0.2);
+    --destructive: #ef4444;
+    --destructive-foreground: white;
+    --popover: #252b38;
+    --popover-foreground: #e8eaed;
+    --primary: #5a9fd4;
+    --primary-foreground: white;
+    --secondary: #333a48;
+    --secondary-foreground: #e8eaed;
+  }
+}
+
+*,
+*::before,
+*::after {
+  border-color: var(--border);
+}

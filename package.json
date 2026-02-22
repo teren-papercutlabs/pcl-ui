@@ -1,5 +1,5 @@
 {
-  "name": "@pcl/ui",
+  "name": "@teren-papercutlabs/ui",
   "version": "2.0.0",
   "description": "PcL UI primitives built on Radix UI and Tailwind CSS v4",
   "type": "module",
@@ -12,6 +12,9 @@
     },
     "./theme.css": "./dist/theme.css"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "files": [
     "dist"
   ],
@@ -21,14 +24,15 @@
     "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
     "tailwindcss": "^4.0.0"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-context-menu": "^2.1.5",
     "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-select": "^2.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
@@ -36,8 +40,8 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.47",
-    "@types/react-dom": "^18.2.18",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   }

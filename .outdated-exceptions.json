@@ -1,0 +1,17 @@
+{
+  "react": {
+    "reason": "Peer dep already supports ^18 || ^19 — lockfile at 18.x, range is intentionally broad for library consumers",
+    "expires": "2026-05-22",
+    "ticket": "N/A"
+  },
+  "react-dom": {
+    "reason": "Peer dep already supports ^18 || ^19 — lockfile at 18.x, range is intentionally broad for library consumers",
+    "expires": "2026-05-22",
+    "ticket": "N/A"
+  },
+  "tailwind-merge": {
+    "reason": "v3 is a major bump with breaking API changes; v2 is stable and sufficient for current usage. Upgrade when consuming apps are ready.",
+    "expires": "2026-05-22",
+    "ticket": "N/A"
+  }
+}
