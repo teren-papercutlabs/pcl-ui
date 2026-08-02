@@ -473,7 +473,7 @@ function Toaster({ toaster }) {
 import * as React9 from "react";
 import { jsx as jsx13, jsxs as jsxs7 } from "react/jsx-runtime";
 function withSlot(element, slot) {
-  return React9.cloneElement(element, { "data-comment-slot": slot });
+  return React9.cloneElement(element, { "data-comment-slot": element.props["data-comment-slot"] ?? slot });
 }
 var ThreeSlotBar = React9.forwardRef(
   ({ start, middle, end, state = "rest", className, ...props }, ref) => /* @__PURE__ */ jsxs7("div", { ref, className: cn("pcl-comment-three-slot-bar", className), "data-state": state, ...props, children: [
@@ -543,8 +543,8 @@ var CommentNotice = React9.forwardRef(
       ref,
       className: cn("pcl-comment-notice", className),
       "data-variant": variant,
-      role: role ?? (variant === "danger" ? "alert" : "status"),
-      "aria-live": live,
+      role: live === "off" ? role : role ?? (variant === "danger" ? "alert" : "status"),
+      "aria-live": live === "off" ? void 0 : live,
       ...props
     }
   )
