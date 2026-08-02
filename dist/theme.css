@@ -81,6 +81,7 @@
 .pcl-comment-three-slot-bar > [data-comment-slot="end"] { min-height: 52px; }
 
 .pcl-comment-sheet {
+  border: 1px solid var(--pcl-comment-line, #d9dfdb);
   background: var(--pcl-comment-bg, #f5f7f5);
   color: var(--pcl-comment-ink, #1c2521);
 }
