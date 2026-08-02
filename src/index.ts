@@ -28,4 +28,22 @@ export {
   ContextMenuItem,
 } from './context-menu'
 export { Toaster, createToaster } from './toast'
+export {
+  ThreeSlotBar,
+  CommentSheet,
+  CommentSheetHeader,
+  CommentSheetHandle,
+  CommentCard,
+  CommentQuote,
+  CommentIdentity,
+  CommentActions,
+  CommentNotice,
+} from './comment-surface'
+export type {
+  CommentSurfaceState,
+  ThreeSlotBarProps,
+  CommentSheetProps,
+  CommentCardProps,
+  CommentNoticeProps,
+} from './comment-surface'
 export { cn } from './lib/utils'

@@ -1,32 +1,32 @@
-/* PcL Steel Blue palette — hex fallbacks for oklch */
+/* PcL Steel Blue palette */
 
 :root {
-  --background: #f5f6f8;
-  --foreground: #2b3544;
-  --card: #ffffff;
-  --card-foreground: #2b3544;
-  --muted: #e8eaed;
-  --muted-foreground: #6e7a8a;
+  --background: oklch(0.97 0.005 240);
+  --foreground: oklch(0.22 0.03 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 240);
+  --muted: oklch(0.93 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
   --accent: #3f78a4;
   --accent-foreground: white;
-  --accent-light: #d1d7df;
-  --accent-lighter: #eceff2;
-  --border: #d1d7df;
-  --input: #d1d7df;
+  --accent-light: oklch(0.88 0.03 240);
+  --accent-lighter: oklch(0.94 0.015 240);
+  --border: oklch(0.88 0.01 240);
+  --input: oklch(0.88 0.01 240);
   --ring: #3f78a4;
-  --invalid: #fde8e8;
+  --invalid: oklch(0.92 0.03 25);
   --shadow-sm: 0 1px 3px 0px hsl(220 20% 0% / 0.06),
     0 1px 2px -1px hsl(220 20% 0% / 0.06);
   --shadow-md: 0 2px 6px 0px hsl(220 20% 0% / 0.08),
     0 2px 4px -1px hsl(220 20% 0% / 0.06);
   --destructive: #dc2626;
   --destructive-foreground: white;
-  --popover: #ffffff;
-  --popover-foreground: #2b3544;
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 240);
   --primary: #3f78a4;
   --primary-foreground: white;
-  --secondary: #e8eaed;
-  --secondary-foreground: #2b3544;
+  --secondary: oklch(0.93 0.01 240);
+  --secondary-foreground: oklch(0.22 0.03 240);
   --radius: 0.5rem;
   --warning-bg: #fff3cd;
   --warning-fg: #856404;
@@ -34,32 +34,32 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #1a1f2a;
-    --foreground: #e8eaed;
-    --card: #252b38;
-    --card-foreground: #e8eaed;
-    --muted: #333a48;
-    --muted-foreground: #9aa3b0;
+    --background: oklch(0.18 0.015 240);
+    --foreground: oklch(0.93 0.005 240);
+    --card: oklch(0.22 0.02 240);
+    --card-foreground: oklch(0.93 0.005 240);
+    --muted: oklch(0.26 0.02 240);
+    --muted-foreground: oklch(0.65 0.01 240);
     --accent: #5a9fd4;
     --accent-foreground: white;
-    --accent-light: #3d4756;
-    --accent-lighter: #2e3644;
-    --border: #3d4756;
-    --input: #3d4756;
+    --accent-light: oklch(0.35 0.04 240);
+    --accent-lighter: oklch(0.28 0.025 240);
+    --border: oklch(0.32 0.02 240);
+    --input: oklch(0.32 0.02 240);
     --ring: #5a9fd4;
-    --invalid: #4a2a2a;
+    --invalid: oklch(0.3 0.05 25);
     --shadow-sm: 0 1px 3px 0px hsl(220 20% 0% / 0.2),
       0 1px 2px -1px hsl(220 20% 0% / 0.2);
     --shadow-md: 0 2px 6px 0px hsl(220 20% 0% / 0.25),
       0 2px 4px -1px hsl(220 20% 0% / 0.2);
     --destructive: #ef4444;
     --destructive-foreground: white;
-    --popover: #252b38;
-    --popover-foreground: #e8eaed;
+    --popover: oklch(0.22 0.02 240);
+    --popover-foreground: oklch(0.93 0.005 240);
     --primary: #5a9fd4;
     --primary-foreground: white;
-    --secondary: #333a48;
-    --secondary-foreground: #e8eaed;
+    --secondary: oklch(0.26 0.02 240);
+    --secondary-foreground: oklch(0.93 0.005 240);
   }
 }
 
@@ -68,3 +68,88 @@
 *::after {
   border-color: var(--border);
 }
+
+/* Comment surface patterns. Consumers own data and behavior; these classes
+ * carry the ruled visual defaults from the published-reader control set. */
+.pcl-comment-three-slot-bar {
+  display: grid;
+  grid-template-columns: minmax(64px, .8fr) minmax(64px, .8fr) minmax(0, 2.4fr);
+  align-items: stretch;
+  gap: 8px;
+}
+.pcl-comment-three-slot-bar > [data-comment-slot] { min-width: 0; }
+.pcl-comment-three-slot-bar > [data-comment-slot="end"] { min-height: 52px; }
+
+.pcl-comment-sheet {
+  border: 1px solid var(--pcl-comment-line, #d9dfdb);
+  background: var(--pcl-comment-bg, #f5f7f5);
+  color: var(--pcl-comment-ink, #1c2521);
+}
+.pcl-comment-sheet-header {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--pcl-comment-line, #d9dfdb);
+  padding: 8px;
+  font-size: 13px;
+}
+.pcl-comment-sheet-handle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: var(--pcl-comment-handle, #c4cbc7);
+}
+
+.pcl-comment-card {
+  border: 1px solid var(--pcl-comment-line, #d9dfdb);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: var(--pcl-comment-panel, #fff);
+  box-shadow: 0 1px 2px var(--pcl-comment-card-shadow, #0000000d);
+  color: var(--pcl-comment-ink, #1c2521);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.pcl-comment-card[data-state="active"] {
+  border-color: var(--pcl-comment-accent, #315f72);
+}
+.pcl-comment-card[data-state="pending"] {
+  border-color: var(--pcl-comment-pending-line, #eadf9c);
+  background: var(--pcl-comment-pending-bg, #fffbea);
+}
+.pcl-comment-card[data-state="disabled"] { opacity: .5; }
+.pcl-comment-card[data-tone="agent"] .pcl-comment-identity {
+  border: 1px solid var(--pcl-comment-agent-line, #d7e4e8);
+  border-radius: 9px;
+  padding: 8px 9px;
+  background: var(--pcl-comment-agent-bg, #eef3f6);
+}
+.pcl-comment-quote {
+  margin: 0 0 7px;
+  border-inline-start: 2px solid var(--pcl-comment-quote, #ffd84d);
+  padding-inline-start: 8px;
+  color: var(--pcl-comment-muted, #66706a);
+  font-size: 12px;
+}
+.pcl-comment-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pcl-comment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pcl-comment-notice {
+  color: var(--pcl-comment-muted, #66706a);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.pcl-comment-notice[data-variant="success"] { color: var(--pcl-comment-success, #2f6d54); }
+.pcl-comment-notice[data-variant="warning"] { color: var(--pcl-comment-warning, #7b622a); }
+.pcl-comment-notice[data-variant="danger"] { color: var(--pcl-comment-danger, #8c3b32); }
