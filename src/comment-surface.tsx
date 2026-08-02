@@ -13,7 +13,7 @@ export interface ThreeSlotBarProps extends React.HTMLAttributes<HTMLDivElement> 
 }
 
 function withSlot(element: SlotElement, slot: 'start' | 'middle' | 'end') {
-  return React.cloneElement(element, { 'data-comment-slot': slot })
+  return React.cloneElement(element, { 'data-comment-slot': element.props['data-comment-slot'] ?? slot })
 }
 
 export const ThreeSlotBar = React.forwardRef<HTMLDivElement, ThreeSlotBarProps>(
@@ -109,8 +109,8 @@ export const CommentNotice = React.forwardRef<HTMLDivElement, CommentNoticeProps
       ref={ref}
       className={cn('pcl-comment-notice', className)}
       data-variant={variant}
-      role={role ?? (variant === 'danger' ? 'alert' : 'status')}
-      aria-live={live}
+      role={live === 'off' ? role : role ?? (variant === 'danger' ? 'alert' : 'status')}
+      aria-live={live === 'off' ? undefined : live}
       {...props}
     />
   ),
