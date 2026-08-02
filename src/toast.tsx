@@ -1,12 +1,12 @@
 /**
- * Toast system — lightweight replacement for Chakra's createToaster.
+ * Shared toast API backed by Radix Toast.
  *
- * Renders toast notifications in a fixed container at bottom-right.
- * Uses a pub-sub pattern: `createToaster()` returns an object with
- * `.success()`, `.error()`, `.info()` methods. A `<Toaster>` component
- * subscribes and renders them.
+ * Product code owns the semantic variants and PcL card styling. Radix owns
+ * timing, pause/focus behavior, announcements, keyboard focus and swipe
+ * dismissal.
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState } from 'react'
+import * as ToastPrimitive from '@radix-ui/react-toast'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
 import { cn } from './lib/utils'
 
@@ -25,50 +25,59 @@ interface ToasterOptions {
   pauseOnPageIdle?: boolean
 }
 
+interface ToastOptions {
+  title?: string
+  description?: string
+  duration?: number
+}
+
 interface ToasterInstance {
   subscribe: (listener: ToastListener) => () => void
-  success: (opts: { title?: string; description?: string; duration?: number }) => void
-  error: (opts: { title?: string; description?: string; duration?: number }) => void
-  info: (opts: { title?: string; description?: string; duration?: number }) => void
+  getSnapshot: () => ToastData[]
+  dismiss: (id: string) => void
+  success: (opts: ToastOptions) => void
+  error: (opts: ToastOptions) => void
+  info: (opts: ToastOptions) => void
+  placement: string
 }
 
 let toastIdCounter = 0
 
-export function createToaster(_options?: ToasterOptions): ToasterInstance {
+export function createToaster(options?: ToasterOptions): ToasterInstance {
   let toasts: ToastData[] = []
   const listeners = new Set<ToastListener>()
 
   function notify() {
-    listeners.forEach((l) => l([...toasts]))
+    const snapshot = [...toasts]
+    listeners.forEach((listener) => listener(snapshot))
   }
 
-  function addToast(type: ToastData['type'], opts: { title?: string; description?: string; duration?: number }) {
+  function addToast(type: ToastData['type'], opts: ToastOptions) {
     const id = `toast-${++toastIdCounter}`
-    const duration = opts.duration ?? 4000
-    const toast: ToastData = { id, type, ...opts }
-    toasts = [...toasts, toast]
+    toasts = [...toasts, { id, type, ...opts }]
     notify()
+  }
 
-    if (duration > 0) {
-      setTimeout(() => {
-        toasts = toasts.filter((t) => t.id !== id)
-        notify()
-      }, duration)
-    }
+  function dismiss(id: string) {
+    const next = toasts.filter((toast) => toast.id !== id)
+    if (next.length === toasts.length) return
+    toasts = next
+    notify()
   }
 
   return {
+    placement: options?.placement ?? 'bottom-end',
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
     },
-    success(opts) { addToast('success', opts) },
-    error(opts) { addToast('error', opts) },
-    info(opts) { addToast('info', opts) },
+    getSnapshot: () => [...toasts],
+    dismiss,
+    success: (opts) => addToast('success', opts),
+    error: (opts) => addToast('error', opts),
+    info: (opts) => addToast('info', opts),
   }
 }
-
-// ── Toaster React component ──
 
 interface ToasterProps {
   toaster: ToasterInstance
@@ -86,49 +95,70 @@ const COLOR_MAP = {
   info: 'text-[var(--primary)]',
 }
 
+const VIEWPORT_PLACEMENT = {
+  'bottom-start': 'bottom-4 left-4',
+  'bottom-end': 'bottom-4 right-4',
+  'top-start': 'top-4 left-4',
+  'top-end': 'top-4 right-4',
+} as const
+
 export function Toaster({ toaster }: ToasterProps) {
-  const [toasts, setToasts] = useState<ToastData[]>([])
+  const [toasts, setToasts] = useState<ToastData[]>(() => toaster.getSnapshot())
 
-  useEffect(() => {
-    return toaster.subscribe(setToasts)
-  }, [toaster])
+  useEffect(() => toaster.subscribe(setToasts), [toaster])
 
-  const dismiss = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
-
-  if (toasts.length === 0) return null
+  const viewportPlacement = VIEWPORT_PLACEMENT[
+    toaster.placement as keyof typeof VIEWPORT_PLACEMENT
+  ] ?? VIEWPORT_PLACEMENT['bottom-end']
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+    <ToastPrimitive.Provider swipeDirection="right" label="Notifications">
       {toasts.map((toast) => {
         const Icon = ICON_MAP[toast.type]
         return (
-          <div
+          <ToastPrimitive.Root
             key={toast.id}
+            duration={toast.duration ?? 4000}
+            onOpenChange={(open) => {
+              if (!open) toaster.dismiss(toast.id)
+            }}
             className={cn(
               'flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 shadow-md',
-              'animate-in slide-in-from-bottom-2',
+              'data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2',
+              'data-[state=closed]:animate-out data-[state=closed]:fade-out',
+              'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',
+              'data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform',
+              'data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full',
             )}
           >
             <Icon size={16} className={cn('mt-0.5 shrink-0', COLOR_MAP[toast.type])} />
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               {toast.title && (
-                <p className="text-sm font-medium">{toast.title}</p>
+                <ToastPrimitive.Title className="text-sm font-medium">
+                  {toast.title}
+                </ToastPrimitive.Title>
               )}
               {toast.description && (
-                <p className="text-xs text-[var(--muted-foreground)] mt-1">{toast.description}</p>
+                <ToastPrimitive.Description className="mt-1 text-xs text-[var(--muted-foreground)]">
+                  {toast.description}
+                </ToastPrimitive.Description>
               )}
             </div>
-            <div
-              className="cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)] shrink-0"
-              onClick={() => dismiss(toast.id)}
+            <ToastPrimitive.Close
+              aria-label="Dismiss notification"
+              className="shrink-0 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               <X size={14} />
-            </div>
-          </div>
+            </ToastPrimitive.Close>
+          </ToastPrimitive.Root>
         )
       })}
-    </div>
+      <ToastPrimitive.Viewport
+        className={cn(
+          'fixed z-[100] m-0 flex w-[calc(100vw-2rem)] max-w-sm list-none flex-col gap-2 p-0 outline-none',
+          viewportPlacement,
+        )}
+      />
+    </ToastPrimitive.Provider>
   )
 }
