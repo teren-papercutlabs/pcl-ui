@@ -33,13 +33,18 @@ interface ToastOptions {
 
 interface ToasterInstance {
   subscribe: (listener: ToastListener) => () => void
-  getSnapshot: () => ToastData[]
-  dismiss: (id: string) => void
   success: (opts: ToastOptions) => void
   error: (opts: ToastOptions) => void
   info: (opts: ToastOptions) => void
+}
+
+interface InternalToasterState {
+  getSnapshot: () => ToastData[]
+  dismiss: (id: string) => void
   placement: string
 }
+
+const internalState = new WeakMap<ToasterInstance, InternalToasterState>()
 
 let toastIdCounter = 0
 
@@ -65,18 +70,21 @@ export function createToaster(options?: ToasterOptions): ToasterInstance {
     notify()
   }
 
-  return {
-    placement: options?.placement ?? 'bottom-end',
+  const instance: ToasterInstance = {
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
     },
-    getSnapshot: () => [...toasts],
-    dismiss,
     success: (opts) => addToast('success', opts),
     error: (opts) => addToast('error', opts),
     info: (opts) => addToast('info', opts),
   }
+  internalState.set(instance, {
+    getSnapshot: () => [...toasts],
+    dismiss,
+    placement: options?.placement ?? 'bottom-end',
+  })
+  return instance
 }
 
 interface ToasterProps {
@@ -103,12 +111,13 @@ const VIEWPORT_PLACEMENT = {
 } as const
 
 export function Toaster({ toaster }: ToasterProps) {
-  const [toasts, setToasts] = useState<ToastData[]>(() => toaster.getSnapshot())
+  const state = internalState.get(toaster)
+  const [toasts, setToasts] = useState<ToastData[]>(() => state?.getSnapshot() ?? [])
 
   useEffect(() => toaster.subscribe(setToasts), [toaster])
 
   const viewportPlacement = VIEWPORT_PLACEMENT[
-    toaster.placement as keyof typeof VIEWPORT_PLACEMENT
+    state?.placement as keyof typeof VIEWPORT_PLACEMENT
   ] ?? VIEWPORT_PLACEMENT['bottom-end']
 
   return (
@@ -120,7 +129,10 @@ export function Toaster({ toaster }: ToasterProps) {
             key={toast.id}
             duration={toast.duration ?? 4000}
             onOpenChange={(open) => {
-              if (!open) toaster.dismiss(toast.id)
+              if (!open) {
+                if (state) state.dismiss(toast.id)
+                else setToasts((current) => current.filter(({ id }) => id !== toast.id))
+              }
             }}
             className={cn(
               'flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 shadow-md',

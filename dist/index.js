@@ -720,6 +720,7 @@ import { useEffect, useState as useState2 } from "react";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { X as X3, CheckCircle, AlertCircle, Info } from "lucide-react";
 import { jsx as jsx15, jsxs as jsxs8 } from "react/jsx-runtime";
+var internalState = /* @__PURE__ */ new WeakMap();
 var toastIdCounter = 0;
 function createToaster(options) {
   let toasts = [];
@@ -739,18 +740,21 @@ function createToaster(options) {
     toasts = next;
     notify();
   }
-  return {
-    placement: options?.placement ?? "bottom-end",
+  const instance = {
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    getSnapshot: () => [...toasts],
-    dismiss,
     success: (opts) => addToast("success", opts),
     error: (opts) => addToast("error", opts),
     info: (opts) => addToast("info", opts)
   };
+  internalState.set(instance, {
+    getSnapshot: () => [...toasts],
+    dismiss,
+    placement: options?.placement ?? "bottom-end"
+  });
+  return instance;
 }
 var ICON_MAP = {
   success: CheckCircle,
@@ -769,9 +773,10 @@ var VIEWPORT_PLACEMENT = {
   "top-end": "top-4 right-4"
 };
 function Toaster({ toaster }) {
-  const [toasts, setToasts] = useState2(() => toaster.getSnapshot());
+  const state = internalState.get(toaster);
+  const [toasts, setToasts] = useState2(() => state?.getSnapshot() ?? []);
   useEffect(() => toaster.subscribe(setToasts), [toaster]);
-  const viewportPlacement = VIEWPORT_PLACEMENT[toaster.placement] ?? VIEWPORT_PLACEMENT["bottom-end"];
+  const viewportPlacement = VIEWPORT_PLACEMENT[state?.placement] ?? VIEWPORT_PLACEMENT["bottom-end"];
   return /* @__PURE__ */ jsxs8(ToastPrimitive.Provider, { swipeDirection: "right", label: "Notifications", children: [
     toasts.map((toast) => {
       const Icon2 = ICON_MAP[toast.type];
@@ -780,7 +785,10 @@ function Toaster({ toaster }) {
         {
           duration: toast.duration ?? 4e3,
           onOpenChange: (open) => {
-            if (!open) toaster.dismiss(toast.id);
+            if (!open) {
+              if (state) state.dismiss(toast.id);
+              else setToasts((current) => current.filter(({ id }) => id !== toast.id));
+            }
           },
           className: cn(
             "flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 shadow-md",

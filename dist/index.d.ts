@@ -279,12 +279,9 @@ interface ToastOptions {
 }
 interface ToasterInstance {
     subscribe: (listener: ToastListener) => () => void;
-    getSnapshot: () => ToastData[];
-    dismiss: (id: string) => void;
     success: (opts: ToastOptions) => void;
     error: (opts: ToastOptions) => void;
     info: (opts: ToastOptions) => void;
-    placement: string;
 }
 declare function createToaster(options?: ToasterOptions): ToasterInstance;
 interface ToasterProps {

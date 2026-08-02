@@ -14,12 +14,28 @@ function installDom() {
     document: dom.window.document,
     Element: dom.window.Element,
     HTMLElement: dom.window.HTMLElement,
+    Event: dom.window.Event,
     Node: dom.window.Node,
     CustomEvent: dom.window.CustomEvent,
     MutationObserver: dom.window.MutationObserver,
     getComputedStyle: dom.window.getComputedStyle,
     IS_REACT_ACT_ENVIRONMENT: true,
   })
+  Object.defineProperty(document, 'hasFocus', { configurable: true, value: () => true })
+  class PointerEvent extends dom.window.MouseEvent {
+    constructor(type, options = {}) {
+      super(type, options)
+      Object.defineProperties(this, {
+        pointerId: { value: options.pointerId ?? 1 },
+        pointerType: { value: options.pointerType ?? 'touch' },
+      })
+    }
+  }
+  Object.defineProperty(dom.window, 'PointerEvent', { configurable: true, value: PointerEvent })
+  Object.defineProperty(globalThis, 'PointerEvent', { configurable: true, value: PointerEvent })
+  dom.window.HTMLElement.prototype.setPointerCapture = () => {}
+  dom.window.HTMLElement.prototype.releasePointerCapture = () => {}
+  dom.window.HTMLElement.prototype.hasPointerCapture = () => true
   Object.defineProperty(globalThis, 'navigator', {
     configurable: true,
     value: dom.window.navigator,
@@ -50,9 +66,6 @@ test('createToaster preserves the success/error/info API without owning timers',
     ])
     assert.equal(timerCalls, 0, 'Radix, not createToaster, must own dismissal timing')
 
-    const firstId = snapshots[0][0].id
-    toaster.dismiss(firstId)
-    assert.equal(toaster.getSnapshot().some(({ id }) => id === firstId), false)
     unsubscribe()
   } finally {
     globalThis.setTimeout = originalSetTimeout
@@ -85,7 +98,70 @@ test('Toaster renders Radix roots in the existing PcL card language and dismisse
   await act(async () => {
     document.querySelector('[aria-label="Dismiss notification"]').click()
   })
-  assert.equal(toaster.getSnapshot().length, 0)
+  assert.equal(document.querySelector('[data-state="open"]'), null)
+
+  await act(async () => root.unmount())
+  dom.window.close()
+})
+
+test('Toaster remains compatible with the legacy public toaster shape', async () => {
+  const dom = installDom()
+  let listener = () => {}
+  const legacyToaster = {
+    subscribe(next) {
+      listener = next
+      return () => { listener = () => {} }
+    },
+    success() {},
+    error() {},
+    info() {},
+  }
+  const root = createRoot(document.getElementById('root'))
+
+  await act(async () => root.render(React.createElement(Toaster, { toaster: legacyToaster })))
+  await act(async () => listener([{ id: 'legacy-1', type: 'info', title: 'Legacy toast', duration: 0 }]))
+  assert.equal(document.querySelector('[data-state="open"]')?.textContent.includes('Legacy toast'), true)
+
+  await act(async () => document.querySelector('[aria-label="Dismiss notification"]').click())
+  assert.equal(document.querySelector('[data-state="open"]'), null)
+  await act(async () => root.unmount())
+  dom.window.close()
+})
+
+test('Radix owns timeout dismissal and non-default placement is honored', async () => {
+  const dom = installDom()
+  const toaster = createToaster({ placement: 'top-start', pauseOnPageIdle: true })
+  const root = createRoot(document.getElementById('root'))
+
+  await act(async () => root.render(React.createElement(Toaster, { toaster })))
+  await act(async () => toaster.info({ title: 'Brief notice', duration: 20 }))
+  assert.match(document.querySelector('ol').className, /top-4/)
+  assert.match(document.querySelector('ol').className, /left-4/)
+  assert.ok(document.querySelector('[data-state="open"]'))
+
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 80))
+  })
+  assert.equal(document.querySelector('[data-state="open"]'), null)
+  await act(async () => root.unmount())
+  dom.window.close()
+})
+
+test('Radix swipe dismissal closes through the shared toaster path', async () => {
+  const dom = installDom()
+  const toaster = createToaster()
+  const root = createRoot(document.getElementById('root'))
+
+  await act(async () => root.render(React.createElement(Toaster, { toaster })))
+  await act(async () => toaster.info({ title: 'Swipe me', duration: 0 }))
+  const toast = document.querySelector('[data-state="open"]')
+
+  await act(async () => {
+    toast.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 0, clientY: 0 }))
+    toast.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100, clientY: 0 }))
+    toast.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 100, clientY: 0 }))
+  })
+  assert.equal(document.querySelector('[data-state="open"]'), null)
 
   await act(async () => root.unmount())
   dom.window.close()
