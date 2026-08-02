@@ -1,6 +1,7 @@
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import * as React from 'react';
 import { VariantProps } from 'class-variance-authority';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ClassValue } from 'clsx';
 
 declare const buttonVariants: (props?: ({
@@ -79,6 +80,29 @@ interface GroupedSelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
 }
 declare const GroupedSelect: React.ForwardRefExoticComponent<GroupedSelectProps & React.RefAttributes<HTMLButtonElement>>;
 
+/**
+ * MultiSelect — multi-select dropdown with checkbox items.
+ * Trigger styling matches GroupedSelect. Opens a Popover with Checkbox items.
+ * Supports optional group headers.
+ */
+
+interface MultiSelectOption {
+    value: string;
+    label: string;
+    group?: string;
+}
+interface MultiSelectProps {
+    options: MultiSelectOption[];
+    selected: string[];
+    onChange: (selected: string[]) => void;
+    placeholder?: string;
+    summaryFn?: (selected: string[], options: MultiSelectOption[]) => string;
+    agentRef?: string;
+    disabled?: boolean;
+    className?: string;
+}
+declare const MultiSelect: React.ForwardRefExoticComponent<MultiSelectProps & React.RefAttributes<HTMLButtonElement>>;
+
 interface SpinnerProps {
     size?: 'sm' | 'md' | 'lg';
     className?: string;
@@ -131,6 +155,11 @@ declare namespace ContextMenu {
     var Trigger: typeof ContextMenuTrigger;
     var Content: typeof ContextMenuContent;
     var Item: typeof ContextMenuItem;
+    var Sub: typeof ContextMenuSub;
+    var SubTrigger: typeof ContextMenuSubTrigger;
+    var SubContent: typeof ContextMenuSubContent;
+    var Label: typeof ContextMenuLabel;
+    var Separator: typeof ContextMenuSeparator;
 }
 interface ContextMenuTriggerProps {
     asChild?: boolean;
@@ -147,8 +176,89 @@ interface ContextMenuItemProps {
     className?: string;
     children?: React.ReactNode;
     onClick?: React.MouseEventHandler<HTMLDivElement>;
+    disabled?: boolean;
 }
-declare function ContextMenuItem({ className, children, onClick, ...props }: ContextMenuItemProps): React.JSX.Element;
+declare function ContextMenuItem({ className, children, onClick, disabled, ...props }: ContextMenuItemProps): React.JSX.Element;
+interface ContextMenuSubProps {
+    children: React.ReactNode;
+}
+declare function ContextMenuSub({ children }: ContextMenuSubProps): React.JSX.Element;
+interface ContextMenuSubTriggerProps {
+    className?: string;
+    children?: React.ReactNode;
+}
+declare function ContextMenuSubTrigger({ className, children }: ContextMenuSubTriggerProps): React.JSX.Element;
+interface ContextMenuSubContentProps {
+    className?: string;
+    children?: React.ReactNode;
+}
+declare function ContextMenuSubContent({ className, children }: ContextMenuSubContentProps): React.JSX.Element;
+interface ContextMenuLabelProps {
+    className?: string;
+    children?: React.ReactNode;
+}
+declare function ContextMenuLabel({ className, children }: ContextMenuLabelProps): React.JSX.Element;
+interface ContextMenuSeparatorProps {
+    className?: string;
+}
+declare function ContextMenuSeparator({ className }: ContextMenuSeparatorProps): React.JSX.Element;
+
+/**
+ * Popover — floating content panel using @radix-ui/react-popover.
+ *
+ * Usage:
+ *   <Popover open={open} onOpenChange={setOpen}>
+ *     <PopoverTrigger asChild>
+ *       <Button>Open</Button>
+ *     </PopoverTrigger>
+ *     <PopoverContent>
+ *       <PopoverHeader>Title</PopoverHeader>
+ *       <PopoverBody>Content here</PopoverBody>
+ *       <PopoverFooter>Footer</PopoverFooter>
+ *     </PopoverContent>
+ *   </Popover>
+ */
+
+interface PopoverProps {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    children: React.ReactNode;
+}
+declare function Popover({ open, onOpenChange, children }: PopoverProps): React.JSX.Element;
+declare namespace Popover {
+    var Trigger: typeof PopoverTrigger;
+    var Content: React.ForwardRefExoticComponent<PopoverContentProps & React.RefAttributes<HTMLDivElement>>;
+    var Header: typeof PopoverHeader;
+    var Body: typeof PopoverBody;
+    var Footer: typeof PopoverFooter;
+    var CloseTrigger: typeof PopoverCloseTrigger;
+    var Arrow: React.ForwardRefExoticComponent<Omit<PopoverPrimitive.PopoverArrowProps & React.RefAttributes<SVGSVGElement>, "ref"> & React.RefAttributes<SVGSVGElement>>;
+}
+interface PopoverTriggerProps {
+    asChild?: boolean;
+    children: React.ReactElement;
+}
+declare function PopoverTrigger({ asChild, children }: PopoverTriggerProps): React.JSX.Element;
+interface PopoverContentProps extends React.HTMLAttributes<HTMLDivElement> {
+    align?: 'start' | 'center' | 'end';
+    side?: 'top' | 'right' | 'bottom' | 'left';
+    sideOffset?: number;
+}
+declare const PopoverContent: React.ForwardRefExoticComponent<PopoverContentProps & React.RefAttributes<HTMLDivElement>>;
+declare function PopoverHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element;
+declare function PopoverBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element;
+declare function PopoverFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element;
+declare function PopoverCloseTrigger({ className, onClick, ...props }: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element;
+declare const PopoverArrow: React.ForwardRefExoticComponent<Omit<PopoverPrimitive.PopoverArrowProps & React.RefAttributes<SVGSVGElement>, "ref"> & React.RefAttributes<SVGSVGElement>>;
+
+declare const Table: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableElement> & React.RefAttributes<HTMLTableElement>>;
+declare const TableHeader: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableSectionElement> & React.RefAttributes<HTMLTableSectionElement>>;
+declare const TableBody: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableSectionElement> & React.RefAttributes<HTMLTableSectionElement>>;
+declare const TableFooter: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableSectionElement> & React.RefAttributes<HTMLTableSectionElement>>;
+declare const TableRow: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableRowElement> & React.RefAttributes<HTMLTableRowElement>>;
+declare const TableHead: React.ForwardRefExoticComponent<React.ThHTMLAttributes<HTMLTableCellElement> & React.RefAttributes<HTMLTableCellElement>>;
+declare const TableCell: React.ForwardRefExoticComponent<React.TdHTMLAttributes<HTMLTableCellElement> & React.RefAttributes<HTMLTableCellElement>>;
+declare const TableCaption: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLTableCaptionElement> & React.RefAttributes<HTMLTableCaptionElement>>;
 
 interface ToastData {
     id: string;
@@ -222,4 +332,4 @@ declare const CommentNotice: React.ForwardRefExoticComponent<CommentNoticeProps 
 
 declare function cn(...inputs: ClassValue[]): string;
 
-export { Button, type ButtonProps, Checkbox, type CheckboxProps, CommentActions, CommentCard, type CommentCardProps, CommentIdentity, CommentNotice, type CommentNoticeProps, CommentQuote, CommentSheet, CommentSheetHandle, CommentSheetHeader, type CommentSheetProps, type CommentSurfaceState, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, Dialog, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogTitle, FormField, GroupedSelect, type GroupedSelectProps, Input, type InputProps, Label, Separator, Spinner, Textarea, type TextareaProps, ThreeSlotBar, type ThreeSlotBarProps, Toaster, cn, createToaster };
+export { Button, type ButtonProps, Checkbox, type CheckboxProps, CommentActions, CommentCard, type CommentCardProps, CommentIdentity, CommentNotice, type CommentNoticeProps, CommentQuote, CommentSheet, CommentSheetHandle, CommentSheetHeader, type CommentSheetProps, type CommentSurfaceState, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger, Dialog, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogTitle, FormField, GroupedSelect, type GroupedSelectProps, Input, type InputProps, Label, MultiSelect, type MultiSelectOption, type MultiSelectProps, Popover, PopoverArrow, PopoverBody, PopoverCloseTrigger, PopoverContent, PopoverFooter, PopoverHeader, PopoverTrigger, Separator, Spinner, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Textarea, type TextareaProps, ThreeSlotBar, type ThreeSlotBarProps, Toaster, cn, createToaster };

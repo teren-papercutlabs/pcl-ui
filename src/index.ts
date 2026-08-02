@@ -11,6 +11,8 @@ export { Label } from './label'
 export { FormField } from './form-field'
 export { GroupedSelect } from './grouped-select'
 export type { GroupedSelectProps } from './grouped-select'
+export { MultiSelect } from './multi-select'
+export type { MultiSelectOption, MultiSelectProps } from './multi-select'
 export { Spinner } from './spinner'
 export {
   Dialog,
@@ -26,7 +28,32 @@ export {
   ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuLabel,
+  ContextMenuSeparator,
 } from './context-menu'
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverFooter,
+  PopoverCloseTrigger,
+  PopoverArrow,
+} from './popover'
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from './table'
 export { Toaster, createToaster } from './toast'
 export {
   ThreeSlotBar,
