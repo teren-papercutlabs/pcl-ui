@@ -33,6 +33,27 @@ function App() {
 - **Separator** - Horizontal/vertical divider
 - **Spinner** - Loading indicator
 - **Toast** - Toast notification system
+- **ThreeSlotBar** - Stable three-slot comment/action bar; consumer supplies all actions
+- **CommentSheet** - Inline, expandable comment sheet shell with header and handle primitives
+- **CommentCard** - Comment card regions and `rest | active | pending | disabled` states
+- **CommentNotice** - Inline accessible status/alert notice (distinct from global toasts)
+
+## Comment surface
+
+The shared comment components own markup and the ruled visual defaults. Consumers
+continue to own fetching, selection geometry, paging, gestures, send state, and
+all callbacks.
+
+| Component | Typed props |
+|---|---|
+| `ThreeSlotBar` | `start`, `middle`, `end`, `state` |
+| `CommentSheet` | `open`, `expanded`, `disabled` plus native `aside` attributes |
+| `CommentCard` | `state`, `tone`, optional `quotedText`, `identity`, `actions` plus native `div` attributes |
+| `CommentNotice` | `variant`, `live` plus native `div` attributes |
+
+`CommentSheetHeader`, `CommentSheetHandle`, `CommentQuote`, `CommentIdentity`,
+and `CommentActions` are composable regions for consumers that need exact DOM
+control without rebuilding the shared state and style vocabulary.
 
 ## Agent Interaction
 
