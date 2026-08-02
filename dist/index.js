@@ -821,7 +821,7 @@ function Toaster({ toaster }) {
       ToastPrimitive.Viewport,
       {
         className: cn(
-          "fixed z-[100] m-0 flex w-[calc(100vw-2rem)] max-w-sm list-none flex-col gap-2 p-0 outline-none",
+          "fixed z-[100] m-0 flex max-w-[calc(100vw-2rem)] flex-col gap-2 p-0 outline-none",
           viewportPlacement
         )
       }
