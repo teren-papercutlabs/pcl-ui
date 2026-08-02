@@ -272,29 +272,22 @@ interface ToasterOptions {
     placement?: string;
     pauseOnPageIdle?: boolean;
 }
+interface ToastOptions {
+    title?: string;
+    description?: string;
+    duration?: number;
+}
 interface ToasterInstance {
     subscribe: (listener: ToastListener) => () => void;
-    success: (opts: {
-        title?: string;
-        description?: string;
-        duration?: number;
-    }) => void;
-    error: (opts: {
-        title?: string;
-        description?: string;
-        duration?: number;
-    }) => void;
-    info: (opts: {
-        title?: string;
-        description?: string;
-        duration?: number;
-    }) => void;
+    success: (opts: ToastOptions) => void;
+    error: (opts: ToastOptions) => void;
+    info: (opts: ToastOptions) => void;
 }
-declare function createToaster(_options?: ToasterOptions): ToasterInstance;
+declare function createToaster(options?: ToasterOptions): ToasterInstance;
 interface ToasterProps {
     toaster: ToasterInstance;
 }
-declare function Toaster({ toaster }: ToasterProps): React.JSX.Element | null;
+declare function Toaster({ toaster }: ToasterProps): React.JSX.Element;
 
 type CommentSurfaceState = 'rest' | 'active' | 'pending' | 'disabled';
 type SlotElement = React.ReactElement<Record<string, unknown>>;

@@ -716,44 +716,45 @@ var TableCaption = React11.forwardRef(
 TableCaption.displayName = "TableCaption";
 
 // src/toast.tsx
-import { useState as useState2, useEffect, useCallback } from "react";
+import { useEffect, useState as useState2 } from "react";
+import * as ToastPrimitive from "@radix-ui/react-toast";
 import { X as X3, CheckCircle, AlertCircle, Info } from "lucide-react";
 import { jsx as jsx15, jsxs as jsxs8 } from "react/jsx-runtime";
+var internalState = /* @__PURE__ */ new WeakMap();
 var toastIdCounter = 0;
-function createToaster(_options) {
+function createToaster(options) {
   let toasts = [];
   const listeners = /* @__PURE__ */ new Set();
   function notify() {
-    listeners.forEach((l) => l([...toasts]));
+    const snapshot = [...toasts];
+    listeners.forEach((listener) => listener(snapshot));
   }
   function addToast(type, opts) {
     const id = `toast-${++toastIdCounter}`;
-    const duration = opts.duration ?? 4e3;
-    const toast = { id, type, ...opts };
-    toasts = [...toasts, toast];
+    toasts = [...toasts, { id, type, ...opts }];
     notify();
-    if (duration > 0) {
-      setTimeout(() => {
-        toasts = toasts.filter((t) => t.id !== id);
-        notify();
-      }, duration);
-    }
   }
-  return {
+  function dismiss(id) {
+    const next = toasts.filter((toast) => toast.id !== id);
+    if (next.length === toasts.length) return;
+    toasts = next;
+    notify();
+  }
+  const instance = {
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    success(opts) {
-      addToast("success", opts);
-    },
-    error(opts) {
-      addToast("error", opts);
-    },
-    info(opts) {
-      addToast("info", opts);
-    }
+    success: (opts) => addToast("success", opts),
+    error: (opts) => addToast("error", opts),
+    info: (opts) => addToast("info", opts)
   };
+  internalState.set(instance, {
+    getSnapshot: () => [...toasts],
+    dismiss,
+    placement: options?.placement ?? "bottom-end"
+  });
+  return instance;
 }
 var ICON_MAP = {
   success: CheckCircle,
@@ -765,43 +766,67 @@ var COLOR_MAP = {
   error: "text-[var(--destructive)]",
   info: "text-[var(--primary)]"
 };
+var VIEWPORT_PLACEMENT = {
+  "bottom-start": "bottom-4 left-4",
+  "bottom-end": "bottom-4 right-4",
+  "top-start": "top-4 left-4",
+  "top-end": "top-4 right-4"
+};
 function Toaster({ toaster }) {
-  const [toasts, setToasts] = useState2([]);
-  useEffect(() => {
-    return toaster.subscribe(setToasts);
-  }, [toaster]);
-  const dismiss = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-  if (toasts.length === 0) return null;
-  return /* @__PURE__ */ jsx15("div", { className: "fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm", children: toasts.map((toast) => {
-    const Icon2 = ICON_MAP[toast.type];
-    return /* @__PURE__ */ jsxs8(
-      "div",
+  const state = internalState.get(toaster);
+  const [toasts, setToasts] = useState2(() => state?.getSnapshot() ?? []);
+  useEffect(() => toaster.subscribe(setToasts), [toaster]);
+  const viewportPlacement = VIEWPORT_PLACEMENT[state?.placement] ?? VIEWPORT_PLACEMENT["bottom-end"];
+  return /* @__PURE__ */ jsxs8(ToastPrimitive.Provider, { swipeDirection: "right", label: "Notifications", children: [
+    toasts.map((toast) => {
+      const Icon2 = ICON_MAP[toast.type];
+      return /* @__PURE__ */ jsxs8(
+        ToastPrimitive.Root,
+        {
+          duration: toast.duration ?? 4e3,
+          onOpenChange: (open) => {
+            if (!open) {
+              if (state) state.dismiss(toast.id);
+              else setToasts((current) => current.filter(({ id }) => id !== toast.id));
+            }
+          },
+          className: cn(
+            "flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 shadow-md",
+            "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out",
+            "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
+            "data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform",
+            "data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full"
+          ),
+          children: [
+            /* @__PURE__ */ jsx15(Icon2, { size: 16, className: cn("mt-0.5 shrink-0", COLOR_MAP[toast.type]) }),
+            /* @__PURE__ */ jsxs8("div", { className: "min-w-0 flex-1", children: [
+              toast.title && /* @__PURE__ */ jsx15(ToastPrimitive.Title, { className: "text-sm font-medium", children: toast.title }),
+              toast.description && /* @__PURE__ */ jsx15(ToastPrimitive.Description, { className: "mt-1 text-xs text-[var(--muted-foreground)]", children: toast.description })
+            ] }),
+            /* @__PURE__ */ jsx15(
+              ToastPrimitive.Close,
+              {
+                "aria-label": "Dismiss notification",
+                className: "shrink-0 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+                children: /* @__PURE__ */ jsx15(X3, { size: 14 })
+              }
+            )
+          ]
+        },
+        toast.id
+      );
+    }),
+    /* @__PURE__ */ jsx15(
+      ToastPrimitive.Viewport,
       {
         className: cn(
-          "flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 shadow-md",
-          "animate-in slide-in-from-bottom-2"
-        ),
-        children: [
-          /* @__PURE__ */ jsx15(Icon2, { size: 16, className: cn("mt-0.5 shrink-0", COLOR_MAP[toast.type]) }),
-          /* @__PURE__ */ jsxs8("div", { className: "flex-1 min-w-0", children: [
-            toast.title && /* @__PURE__ */ jsx15("p", { className: "text-sm font-medium", children: toast.title }),
-            toast.description && /* @__PURE__ */ jsx15("p", { className: "text-xs text-[var(--muted-foreground)] mt-1", children: toast.description })
-          ] }),
-          /* @__PURE__ */ jsx15(
-            "div",
-            {
-              className: "cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)] shrink-0",
-              onClick: () => dismiss(toast.id),
-              children: /* @__PURE__ */ jsx15(X3, { size: 14 })
-            }
-          )
-        ]
-      },
-      toast.id
-    );
-  }) });
+          "fixed z-[100] m-0 flex w-[calc(100vw-2rem)] max-w-sm list-none flex-col gap-2 p-0 outline-none",
+          viewportPlacement
+        )
+      }
+    )
+  ] });
 }
 
 // src/comment-surface.tsx
