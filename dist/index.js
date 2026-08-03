@@ -730,8 +730,15 @@ function createToaster(options) {
     listeners.forEach((listener) => listener(snapshot));
   }
   function addToast(type, opts) {
-    const id = `toast-${++toastIdCounter}`;
-    toasts = [...toasts, { id, type, ...opts }];
+    let id = opts.id;
+    if (!id) {
+      do
+        id = `toast-${++toastIdCounter}`;
+      while (toasts.some((toast) => toast.id === id));
+    }
+    const current = toasts.find((toast) => toast.id === id);
+    const next = { ...opts, id, type, revision: (current?.revision ?? 0) + 1 };
+    toasts = current ? toasts.map((toast) => toast.id === id ? next : toast) : [...toasts, next];
     notify();
   }
   function dismiss(id) {
@@ -784,6 +791,12 @@ function Toaster({ toaster }) {
         ToastPrimitive.Root,
         {
           duration: toast.duration ?? 4e3,
+          onClick: (event) => {
+            if (!toast.onClick) return;
+            if (event.target.closest("button, a, input, textarea, select")) return;
+            toast.onClick();
+            state?.dismiss(toast.id);
+          },
           onOpenChange: (open) => {
             if (!open) {
               if (state) state.dismiss(toast.id);
@@ -796,7 +809,8 @@ function Toaster({ toaster }) {
             "data-[state=closed]:animate-out data-[state=closed]:fade-out",
             "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
             "data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform",
-            "data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full"
+            "data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full",
+            toast.onClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
           ),
           children: [
             /* @__PURE__ */ jsx15(Icon2, { size: 16, className: cn("mt-0.5 shrink-0", COLOR_MAP[toast.type]) }),
@@ -804,17 +818,31 @@ function Toaster({ toaster }) {
               toast.title && /* @__PURE__ */ jsx15(ToastPrimitive.Title, { className: "text-sm font-medium", children: toast.title }),
               toast.description && /* @__PURE__ */ jsx15(ToastPrimitive.Description, { className: "mt-1 text-xs text-[var(--muted-foreground)]", children: toast.description })
             ] }),
+            toast.onClick && /* @__PURE__ */ jsx15(ToastPrimitive.Action, { altText: "Open notification", asChild: true, children: /* @__PURE__ */ jsx15(
+              "button",
+              {
+                type: "button",
+                onClick: (event) => {
+                  event.stopPropagation();
+                  toast.onClick?.();
+                  state?.dismiss(toast.id);
+                },
+                className: "shrink-0 cursor-pointer text-xs font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                children: "View"
+              }
+            ) }),
             /* @__PURE__ */ jsx15(
               ToastPrimitive.Close,
               {
                 "aria-label": "Dismiss notification",
+                onClick: (event) => event.stopPropagation(),
                 className: "shrink-0 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
                 children: /* @__PURE__ */ jsx15(X3, { size: 14 })
               }
             )
           ]
         },
-        toast.id
+        `${toast.id}:${toast.revision}`
       );
     }),
     /* @__PURE__ */ jsx15(

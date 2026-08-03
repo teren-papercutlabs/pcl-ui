@@ -262,10 +262,12 @@ declare const TableCaption: React.ForwardRefExoticComponent<React.HTMLAttributes
 
 interface ToastData {
     id: string;
+    revision: number;
     title?: string;
     description?: string;
     type: 'success' | 'error' | 'info';
     duration?: number;
+    onClick?: () => void;
 }
 type ToastListener = (toasts: ToastData[]) => void;
 interface ToasterOptions {
@@ -273,9 +275,13 @@ interface ToasterOptions {
     pauseOnPageIdle?: boolean;
 }
 interface ToastOptions {
+    /** Reusing an id replaces the existing toast instead of stacking another. */
+    id?: string;
     title?: string;
     description?: string;
     duration?: number;
+    /** Makes the whole toast an accessible action. */
+    onClick?: () => void;
 }
 interface ToasterInstance {
     subscribe: (listener: ToastListener) => () => void;

@@ -44,6 +44,14 @@ The shared comment components own markup and the ruled visual defaults. Consumer
 continue to own fetching, selection geometry, paging, gestures, send state, and
 all callbacks.
 
+## Toast actions and collapse
+
+`createToaster()` accepts an optional stable `id` and `onClick` on every toast.
+Reusing an id replaces the visible toast (and restarts its duration) instead of
+stacking another, while `onClick` makes the whole card keyboard- and
+pointer-activatable. Use this for a burst of updates that represents one
+destination.
+
 | Component | Typed props |
 |---|---|
 | `ThreeSlotBar` | `start`, `middle`, `end`, `state` |
