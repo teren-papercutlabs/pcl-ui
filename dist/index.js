@@ -791,9 +791,18 @@ function Toaster({ toaster }) {
         ToastPrimitive.Root,
         {
           duration: toast.duration ?? 4e3,
+          tabIndex: toast.onClick ? 0 : void 0,
+          "aria-label": toast.onClick ? "Open notification" : void 0,
           onClick: (event) => {
             if (!toast.onClick) return;
             if (event.target.closest("button, a, input, textarea, select")) return;
+            toast.onClick();
+            state?.dismiss(toast.id);
+          },
+          onKeyDown: (event) => {
+            if (!toast.onClick || event.target !== event.currentTarget) return;
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
             toast.onClick();
             state?.dismiss(toast.id);
           },
