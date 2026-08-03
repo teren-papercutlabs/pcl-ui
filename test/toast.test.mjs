@@ -221,3 +221,27 @@ test('keyboard activation of Dismiss never invokes the toast action', async () =
   await act(async () => root.unmount())
   dom.window.close()
 })
+
+test('the actionable toast card is keyboard-focusable and activates with Enter or Space', async () => {
+  for (const key of ['Enter', ' ']) {
+    const dom = installDom()
+    const toaster = createToaster()
+    let activations = 0
+    const root = createRoot(document.querySelector('#root'))
+
+    await act(async () => root.render(React.createElement(Toaster, { toaster })))
+    await act(async () => toaster.info({ title: 'Actionable', duration: 0, onClick: () => { activations += 1 } }))
+    const toast = document.querySelector('[data-state="open"]')
+
+    assert.equal(toast.tabIndex, 0)
+    assert.equal(toast.getAttribute('aria-label'), 'Open notification')
+    toast.focus()
+    assert.equal(document.activeElement, toast)
+    await act(async () => toast.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })))
+
+    assert.equal(activations, 1)
+    assert.equal(document.querySelector('[data-state="open"]'), null)
+    await act(async () => root.unmount())
+    dom.window.close()
+  }
+})
