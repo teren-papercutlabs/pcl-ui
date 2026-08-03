@@ -12,10 +12,12 @@ import { cn } from './lib/utils'
 
 interface ToastData {
   id: string
+  revision: number
   title?: string
   description?: string
   type: 'success' | 'error' | 'info'
   duration?: number
+  onClick?: () => void
 }
 
 type ToastListener = (toasts: ToastData[]) => void
@@ -25,13 +27,17 @@ interface ToasterOptions {
   pauseOnPageIdle?: boolean
 }
 
-interface ToastOptions {
+export interface ToastOptions {
+  /** Reusing an id replaces the existing toast instead of stacking another. */
+  id?: string
   title?: string
   description?: string
   duration?: number
+  /** Makes the whole toast an accessible action. */
+  onClick?: () => void
 }
 
-interface ToasterInstance {
+export interface ToasterInstance {
   subscribe: (listener: ToastListener) => () => void
   success: (opts: ToastOptions) => void
   error: (opts: ToastOptions) => void
@@ -58,8 +64,12 @@ export function createToaster(options?: ToasterOptions): ToasterInstance {
   }
 
   function addToast(type: ToastData['type'], opts: ToastOptions) {
-    const id = `toast-${++toastIdCounter}`
-    toasts = [...toasts, { id, type, ...opts }]
+    const id = opts.id ?? `toast-${++toastIdCounter}`
+    const current = toasts.find((toast) => toast.id === id)
+    const next = { ...opts, id, type, revision: (current?.revision ?? 0) + 1 }
+    toasts = current
+      ? toasts.map((toast) => toast.id === id ? next : toast)
+      : [...toasts, next]
     notify()
   }
 
@@ -126,8 +136,21 @@ export function Toaster({ toaster }: ToasterProps) {
         const Icon = ICON_MAP[toast.type]
         return (
           <ToastPrimitive.Root
-            key={toast.id}
+            key={`${toast.id}:${toast.revision}`}
             duration={toast.duration ?? 4000}
+            role={toast.onClick ? 'button' : undefined}
+            tabIndex={toast.onClick ? 0 : undefined}
+            onClick={() => {
+              if (!toast.onClick) return
+              toast.onClick()
+              state?.dismiss(toast.id)
+            }}
+            onKeyDown={(event) => {
+              if (!toast.onClick || (event.key !== 'Enter' && event.key !== ' ')) return
+              event.preventDefault()
+              toast.onClick()
+              state?.dismiss(toast.id)
+            }}
             onOpenChange={(open) => {
               if (!open) {
                 if (state) state.dismiss(toast.id)
@@ -141,6 +164,7 @@ export function Toaster({ toaster }: ToasterProps) {
               'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',
               'data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform',
               'data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full',
+              toast.onClick && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]',
             )}
           >
             <Icon size={16} className={cn('mt-0.5 shrink-0', COLOR_MAP[toast.type])} />
@@ -158,6 +182,7 @@ export function Toaster({ toaster }: ToasterProps) {
             </div>
             <ToastPrimitive.Close
               aria-label="Dismiss notification"
+              onClick={(event) => event.stopPropagation()}
               className="shrink-0 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               <X size={14} />

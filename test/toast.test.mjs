@@ -166,3 +166,29 @@ test('Radix swipe dismissal closes through the shared toaster path', async () =>
   await act(async () => root.unmount())
   dom.window.close()
 })
+
+test('stable toast ids collapse a burst and retain one accessible action', async () => {
+  const dom = installDom()
+  const toaster = createToaster()
+  let activations = 0
+  const root = createRoot(document.querySelector('#root'))
+
+  await act(async () => root.render(React.createElement(Toaster, { toaster })))
+  await act(async () => {
+    toaster.info({ id: 'doc-replies', title: 'Rasim replied', description: 'First', duration: 0, onClick: () => { activations += 1 } })
+    toaster.info({ id: 'doc-replies', title: '2 new replies', description: 'Kleya: Latest', duration: 0, onClick: () => { activations += 1 } })
+  })
+
+  const actionable = document.querySelector('[role="button"]')
+  assert.ok(actionable)
+  assert.equal(document.querySelectorAll('[role="button"]').length, 1)
+  assert.match(actionable.textContent, /2 new replies/)
+  assert.match(actionable.textContent, /Kleya: Latest/)
+
+  await act(async () => actionable.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+  assert.equal(activations, 1)
+  assert.equal(document.querySelector('[role="button"]'), null)
+
+  await act(async () => root.unmount())
+  dom.window.close()
+})

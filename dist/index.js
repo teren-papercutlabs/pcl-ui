@@ -730,8 +730,10 @@ function createToaster(options) {
     listeners.forEach((listener) => listener(snapshot));
   }
   function addToast(type, opts) {
-    const id = `toast-${++toastIdCounter}`;
-    toasts = [...toasts, { id, type, ...opts }];
+    const id = opts.id ?? `toast-${++toastIdCounter}`;
+    const current = toasts.find((toast) => toast.id === id);
+    const next = { ...opts, id, type, revision: (current?.revision ?? 0) + 1 };
+    toasts = current ? toasts.map((toast) => toast.id === id ? next : toast) : [...toasts, next];
     notify();
   }
   function dismiss(id) {
@@ -784,6 +786,19 @@ function Toaster({ toaster }) {
         ToastPrimitive.Root,
         {
           duration: toast.duration ?? 4e3,
+          role: toast.onClick ? "button" : void 0,
+          tabIndex: toast.onClick ? 0 : void 0,
+          onClick: () => {
+            if (!toast.onClick) return;
+            toast.onClick();
+            state?.dismiss(toast.id);
+          },
+          onKeyDown: (event) => {
+            if (!toast.onClick || event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            toast.onClick();
+            state?.dismiss(toast.id);
+          },
           onOpenChange: (open) => {
             if (!open) {
               if (state) state.dismiss(toast.id);
@@ -796,7 +811,8 @@ function Toaster({ toaster }) {
             "data-[state=closed]:animate-out data-[state=closed]:fade-out",
             "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
             "data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform",
-            "data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full"
+            "data-[swipe=end]:animate-out data-[swipe=end]:slide-out-to-right-full",
+            toast.onClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
           ),
           children: [
             /* @__PURE__ */ jsx15(Icon2, { size: 16, className: cn("mt-0.5 shrink-0", COLOR_MAP[toast.type]) }),
@@ -808,13 +824,14 @@ function Toaster({ toaster }) {
               ToastPrimitive.Close,
               {
                 "aria-label": "Dismiss notification",
+                onClick: (event) => event.stopPropagation(),
                 className: "shrink-0 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
                 children: /* @__PURE__ */ jsx15(X3, { size: 14 })
               }
             )
           ]
         },
-        toast.id
+        `${toast.id}:${toast.revision}`
       );
     }),
     /* @__PURE__ */ jsx15(
