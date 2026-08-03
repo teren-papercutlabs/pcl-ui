@@ -179,16 +179,45 @@ test('stable toast ids collapse a burst and retain one accessible action', async
     toaster.info({ id: 'doc-replies', title: '2 new replies', description: 'Kleya: Latest', duration: 0, onClick: () => { activations += 1 } })
   })
 
-  const actionable = document.querySelector('[role="button"]')
+  const actionable = Array.from(document.querySelectorAll('button')).find((button) => button.textContent === 'View')
   assert.ok(actionable)
-  assert.equal(document.querySelectorAll('[role="button"]').length, 1)
-  assert.match(actionable.textContent, /2 new replies/)
-  assert.match(actionable.textContent, /Kleya: Latest/)
+  assert.equal(document.querySelectorAll('[data-state="open"]').length, 1)
+  assert.match(document.querySelector('[data-state="open"]').textContent, /2 new replies/)
+  assert.match(document.querySelector('[data-state="open"]').textContent, /Kleya: Latest/)
 
-  await act(async () => actionable.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+  await act(async () => actionable.click())
   assert.equal(activations, 1)
-  assert.equal(document.querySelector('[role="button"]'), null)
+  assert.equal(document.querySelector('[data-state="open"]'), null)
 
+  await act(async () => root.unmount())
+  dom.window.close()
+})
+
+test('generated toast ids never collide with caller-owned ids', () => {
+  const toaster = createToaster()
+  let snapshot = []
+  toaster.subscribe((toasts) => { snapshot = toasts })
+
+  toaster.info({ id: 'toast-1', title: 'Caller-owned' })
+  toaster.error({ title: 'Generated' })
+
+  assert.equal(snapshot.length, 2)
+  assert.deepEqual(snapshot.map(({ title }) => title), ['Caller-owned', 'Generated'])
+})
+
+test('keyboard activation of Dismiss never invokes the toast action', async () => {
+  const dom = installDom()
+  const toaster = createToaster()
+  let activations = 0
+  const root = createRoot(document.querySelector('#root'))
+
+  await act(async () => root.render(React.createElement(Toaster, { toaster })))
+  await act(async () => toaster.info({ title: 'Actionable', duration: 0, onClick: () => { activations += 1 } }))
+  const close = document.querySelector('[aria-label="Dismiss notification"]')
+  await act(async () => close.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+  await act(async () => close.click())
+
+  assert.equal(activations, 0)
   await act(async () => root.unmount())
   dom.window.close()
 })

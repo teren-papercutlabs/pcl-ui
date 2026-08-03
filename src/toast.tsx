@@ -64,7 +64,11 @@ export function createToaster(options?: ToasterOptions): ToasterInstance {
   }
 
   function addToast(type: ToastData['type'], opts: ToastOptions) {
-    const id = opts.id ?? `toast-${++toastIdCounter}`
+    let id = opts.id
+    if (!id) {
+      do id = `toast-${++toastIdCounter}`
+      while (toasts.some((toast) => toast.id === id))
+    }
     const current = toasts.find((toast) => toast.id === id)
     const next = { ...opts, id, type, revision: (current?.revision ?? 0) + 1 }
     toasts = current
@@ -138,16 +142,9 @@ export function Toaster({ toaster }: ToasterProps) {
           <ToastPrimitive.Root
             key={`${toast.id}:${toast.revision}`}
             duration={toast.duration ?? 4000}
-            role={toast.onClick ? 'button' : undefined}
-            tabIndex={toast.onClick ? 0 : undefined}
-            onClick={() => {
+            onClick={(event) => {
               if (!toast.onClick) return
-              toast.onClick()
-              state?.dismiss(toast.id)
-            }}
-            onKeyDown={(event) => {
-              if (!toast.onClick || (event.key !== 'Enter' && event.key !== ' ')) return
-              event.preventDefault()
+              if ((event.target as HTMLElement).closest('button, a, input, textarea, select')) return
               toast.onClick()
               state?.dismiss(toast.id)
             }}
@@ -180,6 +177,21 @@ export function Toaster({ toaster }: ToasterProps) {
                 </ToastPrimitive.Description>
               )}
             </div>
+            {toast.onClick && (
+              <ToastPrimitive.Action altText="Open notification" asChild>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    toast.onClick?.()
+                    state?.dismiss(toast.id)
+                  }}
+                  className="shrink-0 cursor-pointer text-xs font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                >
+                  View
+                </button>
+              </ToastPrimitive.Action>
+            )}
             <ToastPrimitive.Close
               aria-label="Dismiss notification"
               onClick={(event) => event.stopPropagation()}

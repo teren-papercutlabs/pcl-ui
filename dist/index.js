@@ -730,7 +730,12 @@ function createToaster(options) {
     listeners.forEach((listener) => listener(snapshot));
   }
   function addToast(type, opts) {
-    const id = opts.id ?? `toast-${++toastIdCounter}`;
+    let id = opts.id;
+    if (!id) {
+      do
+        id = `toast-${++toastIdCounter}`;
+      while (toasts.some((toast) => toast.id === id));
+    }
     const current = toasts.find((toast) => toast.id === id);
     const next = { ...opts, id, type, revision: (current?.revision ?? 0) + 1 };
     toasts = current ? toasts.map((toast) => toast.id === id ? next : toast) : [...toasts, next];
@@ -786,16 +791,9 @@ function Toaster({ toaster }) {
         ToastPrimitive.Root,
         {
           duration: toast.duration ?? 4e3,
-          role: toast.onClick ? "button" : void 0,
-          tabIndex: toast.onClick ? 0 : void 0,
-          onClick: () => {
+          onClick: (event) => {
             if (!toast.onClick) return;
-            toast.onClick();
-            state?.dismiss(toast.id);
-          },
-          onKeyDown: (event) => {
-            if (!toast.onClick || event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
+            if (event.target.closest("button, a, input, textarea, select")) return;
             toast.onClick();
             state?.dismiss(toast.id);
           },
@@ -820,6 +818,19 @@ function Toaster({ toaster }) {
               toast.title && /* @__PURE__ */ jsx15(ToastPrimitive.Title, { className: "text-sm font-medium", children: toast.title }),
               toast.description && /* @__PURE__ */ jsx15(ToastPrimitive.Description, { className: "mt-1 text-xs text-[var(--muted-foreground)]", children: toast.description })
             ] }),
+            toast.onClick && /* @__PURE__ */ jsx15(ToastPrimitive.Action, { altText: "Open notification", asChild: true, children: /* @__PURE__ */ jsx15(
+              "button",
+              {
+                type: "button",
+                onClick: (event) => {
+                  event.stopPropagation();
+                  toast.onClick?.();
+                  state?.dismiss(toast.id);
+                },
+                className: "shrink-0 cursor-pointer text-xs font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                children: "View"
+              }
+            ) }),
             /* @__PURE__ */ jsx15(
               ToastPrimitive.Close,
               {
