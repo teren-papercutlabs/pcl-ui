@@ -1,8 +1,10 @@
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import * as React from 'react';
+import { ReactNode } from 'react';
 import { VariantProps } from 'class-variance-authority';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ClassValue } from 'clsx';
+import { ConfigProviderProps, ThemeConfig } from 'antd';
 
 declare const buttonVariants: (props?: ({
     variant?: "solid" | "outline" | "subtle" | "plain" | "surface" | null | undefined;
@@ -331,4 +333,45 @@ declare const CommentNotice: React.ForwardRefExoticComponent<CommentNoticeProps 
 
 declare function cn(...inputs: ClassValue[]): string;
 
-export { Button, type ButtonProps, Checkbox, type CheckboxProps, CommentActions, CommentCard, type CommentCardProps, CommentIdentity, CommentNotice, type CommentNoticeProps, CommentQuote, CommentSheet, CommentSheetHandle, CommentSheetHeader, type CommentSheetProps, type CommentSurfaceState, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger, Dialog, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogTitle, FormField, GroupedSelect, type GroupedSelectProps, Input, type InputProps, Label, MultiSelect, type MultiSelectOption, type MultiSelectProps, Popover, PopoverArrow, PopoverBody, PopoverCloseTrigger, PopoverContent, PopoverFooter, PopoverHeader, PopoverTrigger, Separator, Spinner, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Textarea, type TextareaProps, ThreeSlotBar, type ThreeSlotBarProps, Toaster, cn, createToaster };
+type PclThemeOptions = {
+    appearance?: 'light' | 'dark';
+};
+type PclUiProviderProps = {
+    children: ReactNode;
+    appearance?: PclThemeOptions['appearance'];
+    direction?: ConfigProviderProps['direction'];
+    locale?: ConfigProviderProps['locale'];
+    getPopupContainer?: ConfigProviderProps['getPopupContainer'];
+};
+/**
+ * The only supported path from a product to Ant's global theme configuration.
+ * Products choose a named appearance; this layer owns the token family.
+ */
+declare function createPclTheme(options?: PclThemeOptions): ThemeConfig;
+/**
+ * Root provider for an operational product. It deliberately accepts no arbitrary
+ * token or selector overrides: those belong in the ratified shared design layer.
+ */
+declare function PclUiProvider({ children, appearance, direction, locale, getPopupContainer, }: PclUiProviderProps): React.JSX.Element;
+
+type StatusTone = 'neutral' | 'info' | 'success' | 'warning' | 'error';
+type StatusBadgeProps = {
+    label: string;
+    tone: StatusTone;
+};
+/**
+ * A semantic status adapter. It owns the finite visual mapping but deliberately
+ * does not decide a product's business status or accept arbitrary visual props.
+ */
+declare function StatusBadge({ label, tone }: StatusBadgeProps): React.JSX.Element;
+
+type MediaLightboxProps = {
+    children: ReactNode;
+};
+/**
+ * Related evidence belongs to one preview group, so an album opens as one
+ * navigable lightbox rather than a row of disconnected image viewers.
+ */
+declare function MediaLightbox({ children }: MediaLightboxProps): React.JSX.Element;
+
+export { Button, type ButtonProps, Checkbox, type CheckboxProps, CommentActions, CommentCard, type CommentCardProps, CommentIdentity, CommentNotice, type CommentNoticeProps, CommentQuote, CommentSheet, CommentSheetHandle, CommentSheetHeader, type CommentSheetProps, type CommentSurfaceState, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger, Dialog, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogTitle, FormField, GroupedSelect, type GroupedSelectProps, Input, type InputProps, Label, MediaLightbox, type MediaLightboxProps, MultiSelect, type MultiSelectOption, type MultiSelectProps, type PclThemeOptions, PclUiProvider, type PclUiProviderProps, Popover, PopoverArrow, PopoverBody, PopoverCloseTrigger, PopoverContent, PopoverFooter, PopoverHeader, PopoverTrigger, Separator, Spinner, StatusBadge, type StatusBadgeProps, type StatusTone, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Textarea, type TextareaProps, ThreeSlotBar, type ThreeSlotBarProps, Toaster, cn, createPclTheme, createToaster };

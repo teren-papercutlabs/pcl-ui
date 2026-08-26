@@ -947,6 +947,65 @@ var CommentNotice = React12.forwardRef(
   )
 );
 CommentNotice.displayName = "CommentNotice";
+
+// src/pcl-ui-provider.tsx
+import { App, ConfigProvider, theme as antdTheme } from "antd";
+import { jsx as jsx17 } from "react/jsx-runtime";
+var PCL_TOKEN_BASE = Object.freeze({
+  borderRadius: 6,
+  controlHeight: 32
+});
+function assertPclThemeOptions(options) {
+  if (options.appearance !== void 0 && options.appearance !== "light" && options.appearance !== "dark") {
+    throw new Error(`Unsupported PcL theme appearance: ${String(options.appearance)}`);
+  }
+}
+function createPclTheme(options = {}) {
+  assertPclThemeOptions(options);
+  return {
+    algorithm: options.appearance === "dark" ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+    token: PCL_TOKEN_BASE
+  };
+}
+function PclUiProvider({
+  children,
+  appearance,
+  direction,
+  locale,
+  getPopupContainer
+}) {
+  return /* @__PURE__ */ jsx17(
+    ConfigProvider,
+    {
+      direction,
+      getPopupContainer,
+      locale,
+      theme: createPclTheme({ appearance }),
+      children: /* @__PURE__ */ jsx17(App, { children })
+    }
+  );
+}
+
+// src/status-badge.tsx
+import { Badge } from "antd";
+import { jsx as jsx18 } from "react/jsx-runtime";
+var ANT_BADGE_STATUS = {
+  neutral: "default",
+  info: "processing",
+  success: "success",
+  warning: "warning",
+  error: "error"
+};
+function StatusBadge({ label, tone }) {
+  return /* @__PURE__ */ jsx18(Badge, { status: ANT_BADGE_STATUS[tone], text: label });
+}
+
+// src/media-lightbox.tsx
+import { Image } from "antd";
+import { jsx as jsx19 } from "react/jsx-runtime";
+function MediaLightbox({ children }) {
+  return /* @__PURE__ */ jsx19(Image.PreviewGroup, { children });
+}
 export {
   Button,
   Checkbox,
@@ -978,7 +1037,9 @@ export {
   GroupedSelect,
   Input,
   Label,
+  MediaLightbox,
   MultiSelect,
+  PclUiProvider,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -989,6 +1050,7 @@ export {
   PopoverTrigger,
   Separator,
   Spinner,
+  StatusBadge,
   Table,
   TableBody,
   TableCaption,
@@ -1001,6 +1063,7 @@ export {
   ThreeSlotBar,
   Toaster,
   cn,
+  createPclTheme,
   createToaster
 };
 //# sourceMappingURL=index.js.map
