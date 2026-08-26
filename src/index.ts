@@ -74,3 +74,9 @@ export type {
   CommentNoticeProps,
 } from './comment-surface'
 export { cn } from './lib/utils'
+export { PclUiProvider, createPclTheme } from './pcl-ui-provider'
+export type { PclUiProviderProps, PclThemeOptions } from './pcl-ui-provider'
+export { StatusBadge } from './status-badge'
+export type { StatusBadgeProps, StatusTone } from './status-badge'
+export { MediaLightbox } from './media-lightbox'
+export type { MediaLightboxProps } from './media-lightbox'

@@ -1,6 +1,38 @@
 # @pcl/ui
 
-PcL UI primitives built on Radix UI and Tailwind CSS v4.
+`@pcl/ui` is transitioning from its legacy Radix/Tailwind primitives to a thin
+Ant Design policy and composite layer for PcL operational interfaces.
+
+## Current standard for new operational interfaces
+
+Use Ant Design primitives directly from `antd`. Import from `@pcl/ui` only for
+the shared provider, finite policy adapters, and ratified cross-product
+composites. Do not create a local forwarding wrapper for an Ant primitive.
+
+```tsx
+import { Button, Form, Input } from 'antd'
+import { PclUiProvider, StatusBadge } from '@pcl/ui'
+
+function App() {
+  return (
+    <PclUiProvider>
+      <StatusBadge tone="success" label="Submitted for closure" />
+      <Form>
+        <Form.Item label="Case note"><Input /></Form.Item>
+        <Button type="primary">Save changes</Button>
+      </Form>
+    </PclUiProvider>
+  )
+}
+```
+
+`PclUiProvider` is the only product entry point for Ant's `ConfigProvider` and
+`App`. It takes a named appearance (`light` or `dark`); arbitrary token objects
+and private `.ant-*` selector overrides are not supported product conventions.
+
+The legacy exports below remain only for existing consumers until their imports
+are retired by the migration stream. They are not the component source for new
+screens.
 
 ## Installation
 
@@ -74,8 +106,5 @@ All interactive components support the `agentRef` prop for agent-driven interact
 
 ## Theme
 
-Import the theme CSS to get PcL Steel Blue design tokens (light + dark mode):
-
-```tsx
-import '@pcl/ui/theme.css'
-```
+The legacy theme CSS remains only for existing legacy consumers. New Ant-based
+screens obtain their theme through `PclUiProvider`; they do not import this CSS.

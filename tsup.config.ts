@@ -6,6 +6,6 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-dom', 'tailwindcss'],
+  external: ['antd', 'react', 'react-dom', 'tailwindcss'],
   onSuccess: 'cp src/theme.css dist/theme.css',
 })
